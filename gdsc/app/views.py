@@ -7,6 +7,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login,logout
 from django.shortcuts import redirect
 from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+
+def home(request):
+    return render(request, 'landing.html')
 
 def auth_signin(request):
     if request.method == 'POST':
@@ -19,7 +23,7 @@ def auth_signin(request):
         else:
             messages.error(request, "Invalid email or password.")
 
-    return render(request, 'join.html')
+    return render(request, 'signin.html')
 
 
 def auth_signup(request):
@@ -119,4 +123,24 @@ def auth_new_password_view(request):
             return redirect('/new-password')
 
 
+import requests
+from django.shortcuts import render
 
+def natural_disasters_map(request):
+    api_key = 'hQAqJojbgM0srT71TPN39g1MS7IrhK0vpANOc2Wl'
+    url = f'https://eonet.sci.gsfc.nasa.gov/api/v3/events?status=open&api_key={api_key}'
+    response = requests.get(url)
+    events = response.json()['events']
+    markers = []
+    for event in events:
+        title = event['title']
+        latitude = event['geometry'][0]['coordinates'][1]
+        longitude = event['geometry'][0]['coordinates'][0]
+        markers.append({'title': title, 'lat': latitude, 'lng': longitude})
+    context = {'markers': markers}
+    return render(request, 'earthquake.html', context)
+
+def user_det(request):
+    User = get_user_model()
+    users = User.objects.all()
+    return render(request, 'user_details.html',{'users':users})
